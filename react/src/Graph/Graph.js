@@ -3,12 +3,12 @@ import "./Graph.css";
 
 function interpolateXY(point, domain, range, frameX, frameY, spread) {
   const dx = domain.min !== domain.max ?
-    (frameX * (point[0] - domain.min)) / (domain.max - domain.min)
+    (frameX * (point.x - domain.min)) / (domain.max - domain.min)
     : 0;
 
   const delta = Math.abs((range.max - range.min) / range.min);
   const compression = delta < spread ? frameY * (1 - (delta / spread)) : 0;
-  let dy = frameY - (compression / 2) - (((frameY - compression) * (point[1] - range.min)) / (range.max - range.min));
+  let dy = frameY - (compression / 2) - (((frameY - compression) * (point.y - range.min)) / (range.max - range.min));
 
   if (!isFinite(dy)) {
     dy = frameY / 2;
@@ -18,7 +18,7 @@ function interpolateXY(point, domain, range, frameX, frameY, spread) {
 }
 
 export function Graph({ data = [], frameX = 100, frameY = 100, spread = 0 }) {
-  const { ys, xs } = data.reduce((set, [x, y]) => ({
+  const { ys, xs } = data.reduce((set, { x, y }) => ({
     xs: [...set.xs, x],
     ys: [...set.ys, y],
   }), { xs: [], ys: [] });
@@ -34,7 +34,7 @@ export function Graph({ data = [], frameX = 100, frameY = 100, spread = 0 }) {
   };
 
   const path = data
-    .sort(([ax], [bx]) => ax - bx)
+    .sort(({x: ax}, {x: bx}) => ax - bx)
     .map((point, index) => {
       const { dx, dy } = interpolateXY(point, domain, range, frameX, frameY, spread);
 

@@ -4,42 +4,113 @@ import { Graph } from './Graph';
 import reportWebVitals from './reportWebVitals';
 import './index.css';
 
-const data = [
-  [[0, 1], [1, 2], [2, 4], [3, 8], [4, 16]],
-  [[-10, 10], [4, -10], [0, 0], [7, 6], [9, 4]],
-  [[10000, 46000], [10004, 60000], [10007, 69000], [10014, 82000], [10021, 42500], [10026, 40000]],
-  [[1, 0.84], [2, 0.95], [4, 0.97], [5, 0.87], [6, 1.01], [9, 0.96], [10, 0.99], [12, 1.04], [16, 1.01]],
-  [[0.124, 0.3342], [0.132, 0.3856], [0.26, 0.4267], [0.4, 0.4], [0.422, 0.3691]],
-  [[10, 10], [40, 10], [20, 10]],
-];
+const QUADRATIC = {
+  label: 'Quadratic Graph',
+  data: [
+    { x: 0, y: 1 },
+    { x: 1, y: 2 },
+    { x: 2, y: 4 },
+    { x: 3, y: 8 },
+    { x: 4, y: 16 },
+  ],
+  frameX: 100,
+  frameY: 100,
+  spread: 25,
+};
+
+const CARTESIAN = {
+  label: 'Cartesian Graph',
+  data: [
+    { x: -10, y: 1 },
+    { x: 4, y: -8 },
+    { x: 6, y: 9 },
+    { x: -4, y: -12 },
+    { x: 8, y: 16 },
+  ],
+  frameX: 100,
+  frameY: 100,
+  spread: 5,
+};
+
+const BITCOIN = {
+  label: 'Bitcoin Graph',
+  data: [
+    { x: 10000, y: 46000 },
+    { x: 10004, y: 52000 },
+    { x: 10006, y: 60000 },
+    { x: 10010, y: 69000 },
+    { x: 10016, y: 72000 },
+    { x: 10020, y: 82000 },
+    { x: 10021, y: 78000 },
+    { x: 10022, y: 64000 },
+    { x: 10024, y: 48000 },
+    { x: 10026, y: 39000 },
+    { x: 10030, y: 41000 },
+  ],
+  frameX: 250,
+  frameY: 100,
+  spread: 0.5,
+};
+
+const CAD_USD = {
+  label: 'CAD/USD Graph',
+  data: [
+    { x: 0, y: 0.7 },
+    { x: 2, y: 0.728 },
+    { x: 4, y: 0.7401 },
+    { x: 6, y: 0.7099 },
+    { x: 8, y: 0.7155 },
+    { x: 10, y: 0.76 },
+    { x: 12, y: 0.747 },
+  ],
+  frameX: 175,
+  spread: 0.2,
+};
+
+const BATTERY = {
+  label: 'Battery Graph',
+  data: [
+    { x: 0.0028, y: 0.9999 },
+    { x: 0.0042, y: 0.9604 },
+    { x: 0.0055, y: 0.82 },
+    { x: 0.006, y: 0.7402 },
+    { x: 0.0066, y: 0.696 },
+    { x: 0.007, y: 0.705 },
+    { x: 0.0074, y: 0.77 },
+    { x: 0.0078, y: 0.8602 },
+    { x: 0.0082, y: 0.9203 },
+    { x: 0.0086, y: 1 },
+    { x: 0.009, y: 1 },
+    { x: 0.01, y: 1 },
+  ],
+  spread: 0.05,
+};
+
+const WEATHER = {
+  label: 'Weather Graph',
+  data: [
+    { x: 1, y: 10 },
+    { x: 4, y: 10 },
+    { x: 7, y: 10 },
+    { x: 10, y: 10 },
+  ],
+  frameX: 500,
+  frameY: 500,
+};
 
 function Playground() {
+  const graphs = [QUADRATIC, CARTESIAN, BITCOIN, CAD_USD, BATTERY, WEATHER];
+
   return (
     <div className="playground">
-      <label>75px &#xD7; 75px</label>
-      <div className="ex-0">
-        <Graph data={data[0]} frameX={100} frameY={100} spread={25} />
-      </div>
-      <label>200px &#xD7; 200px</label>
-      <div className="ex-1">
-        <Graph data={data[1]} spread={10.5} />
-      </div>
-      <label>275px &#xD7; 100%</label>
-      <div className="ex-2">
-        <Graph data={data[2]} frameX={250} frameY={100} />
-      </div>
-      <label>225px &#xD7; 50%</label>
-      <div className="ex-3">
-        <Graph data={data[3]} frameX={200} spread={0.5} />
-      </div>
-      <label>400px &#xD7; 20%</label>
-      <div className="ex-4">
-        <Graph data={data[4]} />
-      </div>
-      <label>100vh &#xD7; 100%</label>
-      <div className="ex-5">
-        <Graph data={data[5]} />
-      </div>
+      {graphs.map(({label, ...props}, index) => (
+        <React.Fragment key={index}>
+          <label>{label}</label>
+          <div className={`ex-${index}`}>
+            <Graph {...props} />
+          </div>
+        </React.Fragment>
+      ))}
     </div>
   );
 }
