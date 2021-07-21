@@ -1,11 +1,27 @@
 import React from 'react';
 import "./Graph.css";
 
-export function Graph({frameX = 100, frameY = 100, data = []}) {
-  const {ys, xs} = data.reduce((set, [x, y]) => ({
+function interpolateXY(point, domain, range, frameX, frameY, spread) {
+  const dx = domain.min !== domain.max ?
+    (frameX * (point[0] - domain.min)) / (domain.max - domain.min)
+    : 0;
+
+  const delta = Math.abs((range.max - range.min) / range.min);
+  const compression = delta < spread ? frameY * (1 - (delta / spread)) : 0;
+  let dy = frameY - (compression / 2) - (((frameY - compression) * (point[1] - range.min)) / (range.max - range.min));
+
+  if (!isFinite(dy)) {
+    dy = frameY / 2;
+  }
+
+  return { dx, dy };
+}
+
+export function Graph({ data = [], frameX = 100, frameY = 100, spread = 0 }) {
+  const { ys, xs } = data.reduce((set, [x, y]) => ({
     xs: [...set.xs, x],
     ys: [...set.ys, y],
-  }), {xs: [], ys: []});
+  }), { xs: [], ys: [] });
 
   const domain = {
     min: Math.min(...xs),
@@ -17,16 +33,10 @@ export function Graph({frameX = 100, frameY = 100, data = []}) {
     max: Math.max(...ys),
   };
 
-  const scale = {
-    x: frameX / (domain.max - domain.min),
-    y: frameY / (range.max - range.min),
-  };
-
   const path = data
     .sort(([ax], [bx]) => ax - bx)
-    .map(([x, y], index) => {
-      const dx = (x - domain.min) * scale.x;
-      const dy = frameY - ((y - range.min) * scale.y);
+    .map((point, index) => {
+      const { dx, dy } = interpolateXY(point, domain, range, frameX, frameY, spread);
 
       return index < 1 ? `M${dx} ${dy}` : `L${dx} ${dy}`;
     })
