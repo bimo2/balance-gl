@@ -22,33 +22,33 @@ body {
   margin-bottom: 1rem;
 }
 
-.ex-1 {
+.ex-0 {
   height: 75px;
   width: 75px;
 }
 
-.ex-2 {
+.ex-1 {
   height: 200px;
   width: 200px;
 }
 
-.ex-3 {
+.ex-2 {
   height: 275px;
   width: 100%;
 }
 
-.ex-4 {
+.ex-3 {
   height: 200px;
   width: 50%;
   margin: auto;
 }
 
-.ex-5 {
+.ex-4 {
   height: 400px;
   width: 20%;
 }
 
-.ex-6 {
+.ex-5 {
   height: 100vh;
   width: 100%;
 }
