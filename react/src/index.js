@@ -30,6 +30,7 @@ const CARTESIAN = {
   frameX: 100,
   frameY: 100,
   spread: 5,
+  bezier: 0,
 };
 
 const BITCOIN = {
@@ -62,6 +63,7 @@ const BITCOIN = {
   frameX: 250,
   frameY: 100,
   spread: 0.5,
+  bezier: 8,
 };
 
 const CAD_USD = {
@@ -74,9 +76,14 @@ const CAD_USD = {
     { x: 8, y: 0.7155 },
     { x: 10, y: 0.76 },
     { x: 12, y: 0.747 },
+    { x: 14, y: 0.747 },
+    { x: 16, y: 0.72 },
+    { x: 18, y: 0.724 },
+    { x: 20, y: 0.731 },
   ],
   frameX: 175,
   spread: 0.2,
+  bezier: 12,
 };
 
 const BATTERY = {

@@ -17,7 +17,7 @@ function interpolateXY(point, domain, range, frameX, frameY, spread) {
   return { dx, dy };
 }
 
-function cubicBezier(points) {
+function cubicBezierPath(points, coefficient) {
   const bezierPoints = [];
 
   for (let i = 0; i < points.length - 1; i++) {
@@ -30,23 +30,37 @@ function cubicBezier(points) {
 
     const bezier = [
       {
-        x: (-set[0].x + (6 * set[1].x) + set[2].x) / 6,
-        y: (-set[0].y + (6 * set[1].y) + set[2].y) / 6,
+        x: (-set[0].x + (coefficient * set[1].x) + set[2].x) / coefficient,
+        y: (-set[0].y + (coefficient * set[1].y) + set[2].y) / coefficient,
       },
       {
-        x: (set[1].x + (6 * set[2].x) - set[3].x) / 6,
-        y: (set[1].y + (6 * set[2].y) - set[3].y) / 6,
+        x: (set[1].x + (coefficient * set[2].x) - set[3].x) / coefficient,
+        y: (set[1].y + (coefficient * set[2].y) - set[3].y) / coefficient,
       },
-      { ...set[2] }
+      { ...set[2] },
     ];
 
     bezierPoints.push(bezier);
   }
 
-  return bezierPoints;
+  return [`M${points[0].x} ${points[0].y}`]
+    .concat(bezierPoints.map(([a, b, c]) => `C${a.x} ${a.y}, ${b.x} ${b.y}, ${c.x} ${c.y}`))
+    .join(' ');
 }
 
-export function Graph({ data = [], frameX = 100, frameY = 100, spread = 0 }) {
+function linearPath([first, ...points]) {
+  return [`M${first.x} ${first.y}`]
+    .concat(points.map((point) => `L${point.x} ${point.y}`))
+    .join(' ');
+}
+
+export function Graph({
+  data = [],
+  frameX = 100,
+  frameY = 100,
+  spread = 0,
+  bezier = 6
+}) {
   const { ys, xs } = data.reduce((set, { x, y }) => ({
     xs: [...set.xs, x],
     ys: [...set.ys, y],
@@ -70,9 +84,7 @@ export function Graph({ data = [], frameX = 100, frameY = 100, spread = 0 }) {
       return { x, y };
     });
 
-  const path = [`M${points[0].x} ${points[0].y}`].concat(
-    cubicBezier(points).map(([a, b, c]) => `C${a.x} ${a.y}, ${b.x} ${b.y}, ${c.x} ${c.y}`)
-  ).join(' ');
+  const path = bezier < 6 ? linearPath(points) : cubicBezierPath(points, bezier);
 
   return (
     <svg className="graph" viewBox={`0 0 ${frameX} ${frameY}`} xmlns="http://www.w3.org/2000/svg">
