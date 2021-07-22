@@ -15,7 +15,7 @@ const QUADRATIC = {
   ],
   frameX: 100,
   frameY: 100,
-  spread: 25,
+  delta: 25,
 };
 
 const CARTESIAN = {
@@ -29,7 +29,7 @@ const CARTESIAN = {
   ],
   frameX: 100,
   frameY: 100,
-  spread: 5,
+  delta: 5,
   bezier: 0,
 };
 
@@ -60,10 +60,12 @@ const BITCOIN = {
     { x: 10021, y: 41000 },
     { x: 10022, y: 141000 },
   ],
+  tint: '#006aff',
   frameX: 250,
   frameY: 100,
-  spread: 0.5,
+  delta: 0.5,
   bezier: 8,
+  gradient: true,
 };
 
 const CAD_USD = {
@@ -81,9 +83,11 @@ const CAD_USD = {
     { x: 18, y: 0.724 },
     { x: 20, y: 0.731 },
   ],
+  tint: '#f21f46',
   frameX: 175,
-  spread: 0.2,
+  delta: 0.2,
   bezier: 12,
+  gradient: true
 };
 
 const BATTERY = {
@@ -102,6 +106,7 @@ const BATTERY = {
     { x: 0.009, y: 1 },
     { x: 0.01, y: 1 },
   ],
+  gradient: true,
 };
 
 const WEATHER = {
@@ -114,6 +119,7 @@ const WEATHER = {
   ],
   frameX: 500,
   frameY: 500,
+  gradient: true,
 };
 
 function Playground() {

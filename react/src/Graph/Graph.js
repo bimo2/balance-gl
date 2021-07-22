@@ -1,13 +1,13 @@
 import React from 'react';
 import "./Graph.css";
 
-function interpolateXY(point, domain, range, frameX, frameY, spread) {
+function interpolateXY(point, domain, range, frameX, frameY, delta) {
   const dx = domain.min !== domain.max
     ? (frameX * (point.x - domain.min)) / (domain.max - domain.min)
     : 0;
 
-  const delta = Math.abs((range.max - range.min) / range.min);
-  const compression = delta < spread ? frameY * (1 - (delta / spread)) : frameY * 0.05;
+  const spread = Math.abs((range.max - range.min) / range.min);
+  const compression = spread < delta ? frameY * (1 - (spread / delta)) : frameY * 0.05;
   let dy = frameY - (compression / 2) - (((frameY - compression) * (point.y - range.min)) / (range.max - range.min));
 
   if (!isFinite(dy)) {
@@ -56,10 +56,12 @@ function linearPath([first, ...points]) {
 
 export function Graph({
   data = [],
+  tint = '#000000',
   frameX = 100,
   frameY = 100,
-  spread = 0,
-  bezier = 6
+  delta = 0,
+  bezier = 6,
+  gradient,
 }) {
   const { ys, xs } = data.reduce((set, { x, y }) => ({
     xs: [...set.xs, x],
@@ -79,16 +81,28 @@ export function Graph({
   const points = data
     .sort(({x: ax}, {x: bx}) => ax - bx)
     .map((point) => {
-      const { dx: x, dy: y } = interpolateXY(point, domain, range, frameX, frameY, spread);
+      const { dx: x, dy: y } = interpolateXY(point, domain, range, frameX, frameY, delta);
 
       return { x, y };
     });
 
   const path = bezier < 6 ? linearPath(points) : cubicBezierPath(points, bezier);
+  const id = Math.random().toString(36).substr(2, 5);
 
   return (
     <svg className="graph" viewBox={`0 0 ${frameX} ${frameY}`} xmlns="http://www.w3.org/2000/svg">
-      <path d={path} stroke="#006aff" strokeWidth="1" fill="transparent" />
+      {gradient && (
+        <>
+          <defs>
+            <linearGradient id={`gradient-${id}`} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="40%" stopColor={tint} stopOpacity="0.1" />
+              <stop offset="80%" stopColor={tint} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={`${path} V${frameY} H0 Z`} strokeWidth="0" fill={`url(#gradient-${id})`} />
+        </>
+      )}
+      <path d={path} stroke={tint} strokeWidth="1" fill="transparent" />
     </svg>
   );
 }
