@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import "./Graph.css";
 
 function interpolateXY(point, domain, range, frameX, frameY, delta) {
@@ -7,7 +7,7 @@ function interpolateXY(point, domain, range, frameX, frameY, delta) {
     : 0;
 
   const spread = Math.abs((range.max - range.min) / range.min);
-  const compression = spread < delta ? frameY * (1 - (spread / delta)) : frameY * 0.05;
+  const compression = spread < delta ? frameY * (1 - (spread / delta)) : frameY * 0.08;
   let dy = frameY - (compression / 2) - (((frameY - compression) * (point.y - range.min)) / (range.max - range.min));
 
   if (!isFinite(dy)) {
@@ -62,7 +62,11 @@ export function Graph({
   delta = 0,
   bezier = 6,
   gradient,
+  guidance,
 }) {
+  const graph = useRef(null);
+  const [cursor, setCursor] = useState(null);
+
   const { ys, xs } = data.reduce((set, { x, y }) => ({
     xs: [...set.xs, x],
     ys: [...set.ys, y],
@@ -89,8 +93,48 @@ export function Graph({
   const path = bezier < 6 ? linearPath(points) : cubicBezierPath(points, bezier);
   const id = Math.random().toString(36).substr(2, 5);
 
+  useEffect(() => {
+    function updateGraphPosition({ clientX, clientY }) {
+      const svgPoint = graph.current.createSVGPoint();
+
+      svgPoint.x = clientX;
+      svgPoint.y = clientY;
+
+      const { x, y } = svgPoint.matrixTransform(graph.current.getScreenCTM().inverse());
+
+      if (x < 0 || x > frameX || y < 0 || y > frameY) {
+        return setCursor(null);
+      }
+
+      for (let i = 0; i < points.length - 1; i++) {
+        if (x >= points[i].x && x <= points[i + 1].x) {
+          const midX = (points[i].x + points[i + 1].x) / 2;
+
+          return setCursor({ ...points[x < midX ? i : i + 1] });
+        }
+      }
+
+      setCursor(null);
+    }
+
+    if (graph && graph.current) {
+      const { current } = graph;
+
+      current.addEventListener("mousemove", updateGraphPosition, false);
+
+      return () => {
+        current.removeEventListener("mousemove", updateGraphPosition, false);
+      };
+    }
+  }, [frameX, frameY, points]);
+
   return (
-    <svg className="graph" viewBox={`0 0 ${frameX} ${frameY}`} xmlns="http://www.w3.org/2000/svg">
+    <svg
+      ref={graph}
+      className="graph"
+      viewBox={`0 0 ${frameX} ${frameY}`}
+      xmlns="http://www.w3.org/2000/svg"
+      onMouseLeave={() => setCursor(null)}>
       {gradient && (
         <>
           <defs>
@@ -103,6 +147,15 @@ export function Graph({
         </>
       )}
       <path d={path} stroke={tint} strokeWidth="1" fill="transparent" />
+      {guidance && cursor && (
+        <circle
+          cx={cursor.x}
+          cy={cursor.y}
+          r="3.25"
+          stroke="#ffffff"
+          strokeWidth="1.75"
+          fill={tint} />
+      )}
     </svg>
   );
 }

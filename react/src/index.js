@@ -48,17 +48,17 @@ const BITCOIN = {
     { x: 10009, y: 39000 },
     { x: 10010, y: 41000 },
     { x: 10011, y: 46000 },
-    { x: 10012, y: 52000 },
-    { x: 10013, y: 66000 },
+    { x: 10012, y: 58000 },
+    { x: 10013, y: 74000 },
     { x: 10014, y: 69000 },
-    { x: 10015, y: 72000 },
+    { x: 10015, y: 66000 },
     { x: 10016, y: 84000 },
     { x: 10017, y: 78000 },
     { x: 10018, y: 64000 },
     { x: 10019, y: 48000 },
     { x: 10020, y: 67000 },
     { x: 10021, y: 41000 },
-    { x: 10022, y: 141000 },
+    { x: 10022, y: 106000 },
   ],
   tint: '#006aff',
   frameX: 250,
@@ -66,6 +66,7 @@ const BITCOIN = {
   delta: 0.5,
   bezier: 8,
   gradient: true,
+  guidance: true,
 };
 
 const CAD_USD = {
@@ -87,7 +88,8 @@ const CAD_USD = {
   frameX: 175,
   delta: 0.2,
   bezier: 12,
-  gradient: true
+  gradient: true,
+  guidance: true,
 };
 
 const BATTERY = {
