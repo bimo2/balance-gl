@@ -4,7 +4,7 @@ import Graph from './Graph';
 test('renders svg path', () => {
   render(<Graph />);
 
-  const svgElement = screen.getByTitle(/graph-id/i);
+  const svgElement = screen.getByTitle(/gl-graph/i);
 
   expect(svgElement).toBeInTheDocument();
 });
