@@ -61,6 +61,12 @@ const BITCOIN = {
     { x: 10021, y: 41000 },
     { x: 10022, y: 96000 },
   ],
+  grid: [
+    { label: '$45K', value: 45000 },
+    { label: '$60K', value: 60000 },
+    { label: '$75K', value: 75000 },
+    { label: '$90K', value: 90000 },
+  ],
   delta: 2.5,
   bezier: 8,
   tint: '#262c33',
@@ -83,6 +89,10 @@ const CAD_USD = {
     { x: 16, y: 0.72 },
     { x: 18, y: 0.724 },
     { x: 20, y: 0.731 },
+  ],
+  grid: [
+    { value: 0.71 },
+    { value: 0.725 },
   ],
   delta: 0.15,
   bezier: 12,

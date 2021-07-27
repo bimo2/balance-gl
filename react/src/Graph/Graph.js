@@ -1,5 +1,5 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
-import "./Graph.css";
+import { contrast } from '../utils';
 
 function interpolateXY(point, domain, range, bounds, delta) {
   const dx = domain.min !== domain.max ? (bounds.x * (point.x - domain.min)) / (domain.max - domain.min) : 0;
@@ -70,7 +70,7 @@ export function Graph({
   const [position, setPosition] = useState(null);
   const id = useMemo(() => Math.random().toString(36).substr(2, 5), []);
 
-  const { points, path } = useMemo(() => {
+  const { domain, range, points, path } = useMemo(() => {
     const { xs, ys } = data.reduce((set, { x, y }) => ({
       xs: [...set.xs, x],
       ys: [...set.ys, y],
@@ -80,7 +80,7 @@ export function Graph({
       min: Math.min(...xs),
       max: Math.max(...xs),
     };
-  
+
     const range = {
       min: Math.min(...ys),
       max: Math.max(...ys),
@@ -96,11 +96,11 @@ export function Graph({
 
     const path = bezier < 6 ? linearPath(points) : cubicBezierPath(points, bezier);
 
-    return { points, path };
+    return { domain, range, points, path };
   }, [data, view, delta, bezier]);
 
   useEffect(() => {
-    function updateGraphPosition({ clientX, clientY }) {
+    const updateGraphPosition = ({ clientX, clientY }) => {
       const svgPoint = graph.current.createSVGPoint();
 
       svgPoint.x = clientX;
@@ -134,19 +134,41 @@ export function Graph({
     }
   }, [reaction, view, points]);
 
+  const gridColor = contrast(background) ? '#000' : '#fff';
+
+  const GridLine = ({ label, value }) => {
+    const { dy } = interpolateXY({ x: 0, y: value }, domain, range, view, delta);
+    const text = label ?? labelY?.(value) ?? `${value}`;
+
+    const textStyle = {
+      fontSize: '0.75rem',
+      opacity: '0.4',
+    };
+
+    return (
+      <g>
+        <text x={view.x - 8} y={dy - 8} fill={gridColor} textAnchor="end" style={textStyle}>{text}</text>
+        <line x1="0" x2={view.x} y1={dy} y2={dy} stroke={`url(#gl-grid-${id})`} strokeWidth="0.25" strokeDasharray="2.5" />
+      </g>
+    );
+  };
+
   return (
-    <svg ref={graph} className="gl-graph" viewBox={`0 0 ${view.x} ${view.y}`} xmlns="http://www.w3.org/2000/svg" version="1.1" onMouseLeave={() => setPosition(null)}>
+    <svg ref={graph} className="gl-graph" viewBox={`0 0 ${view.x} ${view.y}`} xmlns="http://www.w3.org/2000/svg" version="1.1" onMouseLeave={() => setPosition(null)} height="100%" width="100%">
       <defs>
+        <linearGradient id={`gl-grid-${id}`} x1="0" x2="100%" y1="0" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor={background} stopOpacity="0" />
+          <stop offset="100%" stopColor={gridColor} stopOpacity="1" />
+        </linearGradient>
         {gradient && (
-          <linearGradient id={`gl-gradient-${id}`} x1="0" x2="0" y1="0" y2="100%" gradientUnits="userSpaceOnUse">
+          <linearGradient id={`gl-area-${id}`} x1="0" x2="0" y1="0" y2="100%" gradientUnits="userSpaceOnUse">
             <stop offset="40%" stopColor={tint} stopOpacity="0.1" />
             <stop offset="80%" stopColor={tint} stopOpacity="0" />
           </linearGradient>
         )}
       </defs>
-      {gradient && (
-        <path d={`${path} V${view.y} H0 Z`} strokeWidth="0" fill={`url(#gl-gradient-${id})`} />
-      )}
+      {grid.map((props) => <GridLine {...props} />)}
+      {gradient && <path d={`${path} V${view.y} H0 Z`} strokeWidth="0" fill={`url(#gl-area-${id})`} />}
       <path d={path} stroke={tint} strokeWidth={stroke} fill="transparent" />
       {reaction && position && (
         <circle cx={position.x} cy={position.y} r={stroke * 3.25} stroke={background} fill={tint}>
