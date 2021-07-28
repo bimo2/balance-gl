@@ -1,8 +1,13 @@
+const palette = {
+  tint: '#000',
+  background: '#fff',
+};
+
 function contrast(hexColor) {
-  let code = hexColor.substr(1);
+  let code = hexColor.toLowerCase().substr(1);
 
   if (code.length === 3) {
-    code = code.split('').map((hex) => `${hex}${hex}`).join('');
+    code = [...code].map((hex) => `${hex}${hex}`).join('');
   }
 
   const red = parseInt(code.substr(0, 2), 16);
@@ -10,7 +15,7 @@ function contrast(hexColor) {
   const blue = parseInt(code.substr(4, 2), 16);
   const luminosity = ((red * 299) + (green * 587) + (blue * 114)) / 1000;
 
-  return luminosity > 128;
+  return luminosity > 128 ? '#000' : '#fff';
 }
 
-export { contrast };
+export { palette, contrast };

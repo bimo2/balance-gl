@@ -28,9 +28,9 @@ const CARTESIAN = {
     { x: 8, y: 10 },
   ],
   delta: 5,
-  bezier: 0,
-  gradient: true,
-  reaction: true,
+  bezier: 6,
+  gradient: false,
+  reactive: 'point+x',
 };
 
 const BITCOIN = {
@@ -70,8 +70,9 @@ const BITCOIN = {
   delta: 2.5,
   bezier: 8,
   tint: '#262c33',
-  gradient: false,
-  reaction: true,
+  reactive: 'point+xy',
+  labelX: (x) => `April 19 2021`,
+  labelY: (y) => `$${y.toFixed(2)}`,
 };
 
 const CAD_USD = {
@@ -94,12 +95,12 @@ const CAD_USD = {
     { value: 0.71 },
     { value: 0.725 },
   ],
-  delta: 0.15,
   bezier: 12,
   tint: '#fff',
   background: '#262c33',
   gradient: true,
-  reaction: true,
+  reactive: 'point+xy',
+  labelY: (y) => `${Math.ceil(y)}`,
 };
 
 const BATTERY = {

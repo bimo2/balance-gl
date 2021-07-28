@@ -1,10 +1,15 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
-import { contrast } from '../utils';
+import { palette, contrast } from '../colors';
+
+const defaultView = { x: 200, y: 100 };
 
 function interpolateXY(point, domain, range, bounds, delta) {
   const dx = domain.min !== domain.max ? (bounds.x * (point.x - domain.min)) / (domain.max - domain.min) : 0;
   const spread = Math.abs((range.max - range.min) / range.min);
-  const compression = spread < delta ? bounds.y * (1 - (spread / delta)) : bounds.y * 0.08;
+  const deltaCompression = bounds.y * (1 - (spread / delta));
+  const fitCompression = bounds.y * 0.1;
+  const minCompression = 84;
+  const compression = Math.max(deltaCompression, fitCompression, minCompression);
   let dy = bounds.y - (compression / 2) - (((bounds.y - compression) * (point.y - range.min)) / (range.max - range.min));
 
   if (!isFinite(dy)) {
@@ -52,16 +57,16 @@ function linearPath([first, ...points]) {
 }
 
 export function Graph({
-  view = { x: 200, y: 100 },
+  view = defaultView,
   data = [],
   grid = [],
   delta = 0,
   bezier = 0,
   stroke = 2.5,
-  tint = '#000',
-  background = '#fff',
+  tint = palette.tint,
+  background = palette.background,
   gradient,
-  reaction,
+  reactive,
   labelX,
   labelY,
   onQuery,
@@ -123,7 +128,7 @@ export function Graph({
       setPosition(null);
     }
 
-    if (reaction && graph?.current) {
+    if (reactive && graph?.current) {
       const { current } = graph;
 
       current.addEventListener("mousemove", updateGraphPosition, false);
@@ -132,25 +137,70 @@ export function Graph({
         current.removeEventListener("mousemove", updateGraphPosition, false);
       };
     }
-  }, [reaction, view, points]);
+  }, [reactive, view, points]);
 
-  const gridColor = contrast(background) ? '#000' : '#fff';
+  const foreground = contrast(background);
 
-  const GridLine = ({ label, value }) => {
+  const gridFactory = ({ label, value }) => {
     const { dy } = interpolateXY({ x: 0, y: value }, domain, range, view, delta);
-    const text = label ?? labelY?.(value) ?? `${value}`;
+    const text = label ?? labelY?.(value) ?? `${value}`
 
     const textStyle = {
-      fontSize: '0.75rem',
+      fontSize: '12px',
       opacity: '0.4',
+      userSelect: 'none',
     };
 
     return (
-      <g>
-        <text x={view.x - 8} y={dy - 8} fill={gridColor} textAnchor="end" style={textStyle}>{text}</text>
+      <g key={value}>
+        <text x={view.x - 8} y={dy - 8} fill={foreground} textAnchor="end" style={textStyle}>{text}</text>
         <line x1="0" x2={view.x} y1={dy} y2={dy} stroke={`url(#gl-grid-${id})`} strokeWidth="0.25" strokeDasharray="2.5" />
       </g>
     );
+  };
+
+  const buildPosition = ({ x, y }) => {
+    const textStyle = {
+      fontSize: '12px',
+      fontWeight: '500',
+      userSelect: 'none',
+    };
+
+    const subtextStyle = {
+      fontSize: '10px',
+      fontWeight: '500',
+      userSelect: 'none',
+    };
+
+    switch (reactive) {
+      case 'point+x':
+        return (
+          <>
+            <text x={x} y="17" fill={foreground} textAnchor="middle" style={textStyle}>{labelX?.(x) ?? `${x}`}</text>
+            <line x1={position.x} x2={position.x} y1="26" y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
+          </>
+        );
+
+      case 'point+y':
+        return (
+          <>
+            <text x={x} y="16" fill={foreground} textAnchor="middle" style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
+            <line x1={position.x} x2={position.x} y1="26" y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
+          </>
+        );
+
+      case 'point+xy':
+        return (
+          <>
+            <text x={x} y="16" fill={foreground} textAnchor="middle" style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
+            <text x={x} y="32" fill={foreground} opacity="1" textAnchor="middle" style={subtextStyle}>{labelX?.(x) ?? `${x}`}</text>
+            <line x1={position.x} x2={position.x} y1="42" y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
+          </>
+        );
+
+      default:
+        return null;
+    };
   };
 
   return (
@@ -158,22 +208,23 @@ export function Graph({
       <defs>
         <linearGradient id={`gl-grid-${id}`} x1="0" x2="100%" y1="0" y2="0" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor={background} stopOpacity="0" />
-          <stop offset="100%" stopColor={gridColor} stopOpacity="1" />
+          <stop offset="75%" stopColor={foreground} stopOpacity="1" />
         </linearGradient>
-        {gradient && (
-          <linearGradient id={`gl-area-${id}`} x1="0" x2="0" y1="0" y2="100%" gradientUnits="userSpaceOnUse">
-            <stop offset="40%" stopColor={tint} stopOpacity="0.1" />
-            <stop offset="80%" stopColor={tint} stopOpacity="0" />
-          </linearGradient>
-        )}
+        <linearGradient id={`gl-area-${id}`} x1="0" x2="0" y1="0" y2="100%" gradientUnits="userSpaceOnUse">
+          <stop offset="40%" stopColor={tint} stopOpacity="0.1" />
+          <stop offset="80%" stopColor={tint} stopOpacity="0" />
+        </linearGradient>
       </defs>
-      {grid.map((props) => <GridLine {...props} />)}
+      {grid.map(gridFactory)}
       {gradient && <path d={`${path} V${view.y} H0 Z`} strokeWidth="0" fill={`url(#gl-area-${id})`} />}
       <path d={path} stroke={tint} strokeWidth={stroke} fill="transparent" />
-      {reaction && position && (
-        <circle cx={position.x} cy={position.y} r={stroke * 3.25} stroke={background} fill={tint}>
-          <animate attributeName="stroke-width" dur="1450ms" values={`${stroke}; ${stroke * 1.75}; ${stroke}`} repeatCount="indefinite" />
-        </circle>
+      {reactive && position && (
+        <>
+          {buildPosition(position)}
+          <circle cx={position.x} cy={position.y} r={stroke * 3.25} stroke={background} fill={tint}>
+            <animate attributeName="stroke-width" dur="1450ms" values={`${stroke}; ${stroke * 1.75}; ${stroke}`} repeatCount="indefinite" />
+          </circle>
+        </>
       )}
     </svg>
   );
