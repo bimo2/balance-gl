@@ -29,6 +29,7 @@ const CARTESIAN = {
   ],
   delta: 5,
   bezier: 6,
+  tint: '#006AFF',
   gradient: false,
   reactive: 'point+x',
 };
@@ -62,10 +63,10 @@ const BITCOIN = {
     { x: 10022, y: 96000 },
   ],
   grid: [
-    { label: '$45K', value: 45000 },
-    { label: '$60K', value: 60000 },
-    { label: '$75K', value: 75000 },
-    { label: '$90K', value: 90000 },
+    { label: '$45K', y: 45000 },
+    { label: '$60K', y: 60000 },
+    { label: '$75K', y: 75000 },
+    { label: '$90K', y: 90000 },
   ],
   delta: 2.5,
   bezier: 8,
@@ -92,8 +93,8 @@ const CAD_USD = {
     { x: 20, y: 0.731 },
   ],
   grid: [
-    { value: 0.71 },
-    { value: 0.725 },
+    { y: 0.71 },
+    { y: 0.725 },
   ],
   bezier: 12,
   tint: '#fff',

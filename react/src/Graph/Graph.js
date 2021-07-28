@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import React, { useRef, useState, useMemo, useEffect, useLayoutEffect } from 'react';
 import { palette, contrast } from '../colors';
 
 const defaultView = { x: 200, y: 100 };
@@ -8,7 +8,7 @@ function interpolateXY(point, domain, range, bounds, padding, delta) {
   const spread = Math.abs((range.max - range.min) / range.min);
   const deltaCompression = bounds.y * (1 - (spread / delta));
   const fitCompression = bounds.y * 0.1;
-  const minCompression = (padding ?? 0) * 2;
+  const minCompression = padding * 2;
   const compression = Math.max(deltaCompression, fitCompression, minCompression);
   let dy = bounds.y - (compression / 2) - (((bounds.y - compression) * (point.y - range.min)) / (range.max - range.min));
 
@@ -72,10 +72,11 @@ export function Graph({
   reactive,
   labelX,
   labelY,
-  onQuery,
 }) {
   const graph = useRef(null);
+  const label = useRef(null);
   const [position, setPosition] = useState(null);
+  const [alignment, setAlignment] = useState('middle');
   const id = useMemo(() => Math.random().toString(36).substr(2, 5), []);
   const foreground = contrast(background);
 
@@ -138,7 +139,7 @@ export function Graph({
         if (x >= points[i].dx && x <= points[i + 1].dx) {
           const mid = (points[i].dx + points[i + 1].dx) / 2;
 
-          return setPosition({ ...points[x < mid ? i : i + 1] });
+          return setPosition(points[x < mid ? i : i + 1]);
         }
       }
 
@@ -156,9 +157,51 @@ export function Graph({
     }
   }, [reactive, view, points]);
 
-  const gridFactory = ({ label, value }) => {
-    const { dy } = interpolateXY({ x: 0, y: value }, domain, range, view, padding, delta);
-    const text = label ?? labelY?.(value) ?? `${value}`
+  useLayoutEffect(() => {
+    if (!label?.current || !position) {
+      return;
+    }
+
+    const { x: x1, width } = label.current.getBBox();
+    const x2 = x1 + width;
+
+    if (width >= view.x) {
+      return;
+    }
+
+    switch (alignment) {
+      case 'middle':
+        if (x1 < 0) {
+          return setAlignment('start');
+        }
+
+        if (x2 > view.x) {
+          return setAlignment('end');
+        }
+
+        break;
+
+      case 'start':
+        if (position.dx >= (width / 2)) {
+          return setAlignment('middle');
+        }
+
+        break;
+
+      case 'end':
+        if ((view.x - position.dx) >= (width / 2)) {
+          return setAlignment('middle');
+        }
+
+        break;
+
+      default:
+        break;
+    }
+  }, [position, alignment, view]);
+
+  const gridFactory = ({ label: text, y }) => {
+    const { dy } = interpolateXY({ x: 0, y }, domain, range, view, padding, delta);
 
     const textStyle = {
       fontSize: '12px',
@@ -166,8 +209,8 @@ export function Graph({
     };
 
     return (
-      <g key={value}>
-        <text x={view.x - 8} y={dy - 8} fill={foreground} opacity="0.4" textAnchor="end" style={textStyle}>{text}</text>
+      <g key={y}>
+        <text x={view.x - 8} y={dy - 8} fill={foreground} opacity="0.4" textAnchor="end" style={textStyle}>{text ?? labelY?.(y) ?? `${y}`}</text>
         <line x1="0" x2={view.x} y1={dy} y2={dy} stroke={`url(#gl-grid-${id})`} strokeWidth="0.25" strokeDasharray="2.5" />
       </g>
     );
@@ -186,11 +229,24 @@ export function Graph({
       userSelect: 'none',
     };
 
+    const anchor = (() => {
+      switch (alignment) {
+        case 'start':
+          return 0;
+
+        case 'end':
+          return view.x;
+
+        default:
+          return dx;
+      }
+    })();
+
     switch (reactive) {
       case 'point+x':
         return (
           <>
-            <text x={dx} y="16" fill={foreground} textAnchor="middle" style={textStyle}>{labelX?.(x) ?? `${x}`}</text>
+            <text ref={label} x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>{labelX?.(x) ?? `${x}`}</text>
             <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
           </>
         );
@@ -198,7 +254,7 @@ export function Graph({
       case 'point+y':
         return (
           <>
-            <text x={dx} y="16" fill={foreground} textAnchor="middle" style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
+            <text ref={label} x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
             <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
           </>
         );
@@ -206,8 +262,10 @@ export function Graph({
       case 'point+xy':
         return (
           <>
-            <text x={dx} y="16" fill={foreground} textAnchor="middle" style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
-            <text x={dx} y="32" fill={foreground} textAnchor="middle" style={subtextStyle}>{labelX?.(x) ?? `${x}`}</text>
+            <g ref={label}>
+              <text x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
+              <text x={anchor} y="32" fill={foreground} textAnchor={alignment} style={subtextStyle}>{labelX?.(x) ?? `${x}`}</text>
+            </g>
             <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
           </>
         );
