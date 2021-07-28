@@ -3,12 +3,12 @@ import { palette, contrast } from '../colors';
 
 const defaultView = { x: 200, y: 100 };
 
-function interpolateXY(point, domain, range, bounds, delta) {
+function interpolateXY(point, domain, range, bounds, padding, delta) {
   const dx = domain.min !== domain.max ? (bounds.x * (point.x - domain.min)) / (domain.max - domain.min) : 0;
   const spread = Math.abs((range.max - range.min) / range.min);
   const deltaCompression = bounds.y * (1 - (spread / delta));
   const fitCompression = bounds.y * 0.1;
-  const minCompression = 84;
+  const minCompression = (padding ?? 0) * 2;
   const compression = Math.max(deltaCompression, fitCompression, minCompression);
   let dy = bounds.y - (compression / 2) - (((bounds.y - compression) * (point.y - range.min)) / (range.max - range.min));
 
@@ -32,27 +32,30 @@ function cubicBezierPath(points, coefficient) {
 
     const bezier = [
       {
-        x: (-set[0].x + (coefficient * set[1].x) + set[2].x) / coefficient,
-        y: (-set[0].y + (coefficient * set[1].y) + set[2].y) / coefficient,
+        x: (-set[0].dx + (coefficient * set[1].dx) + set[2].dx) / coefficient,
+        y: (-set[0].dy + (coefficient * set[1].dy) + set[2].dy) / coefficient,
       },
       {
-        x: (set[1].x + (coefficient * set[2].x) - set[3].x) / coefficient,
-        y: (set[1].y + (coefficient * set[2].y) - set[3].y) / coefficient,
+        x: (set[1].dx + (coefficient * set[2].dx) - set[3].dx) / coefficient,
+        y: (set[1].dy + (coefficient * set[2].dy) - set[3].dy) / coefficient,
       },
-      { ...set[2] },
+      {
+        x: set[2].dx,
+        y: set[2].dy,
+      },
     ];
 
     bezierPoints.push(bezier);
   }
 
-  return [`M${points[0].x} ${points[0].y}`]
+  return [`M${points[0].dx} ${points[0].dy}`]
     .concat(bezierPoints.map(([a, b, c]) => `C${a.x} ${a.y}, ${b.x} ${b.y}, ${c.x} ${c.y}`))
     .join(' ');
 }
 
 function linearPath([first, ...points]) {
-  return [`M${first.x} ${first.y}`]
-    .concat(points.map((point) => `L${point.x} ${point.y}`))
+  return [`M${first.dx} ${first.dy}`]
+    .concat(points.map((point) => `L${point.dx} ${point.dy}`))
     .join(' ');
 }
 
@@ -74,6 +77,21 @@ export function Graph({
   const graph = useRef(null);
   const [position, setPosition] = useState(null);
   const id = useMemo(() => Math.random().toString(36).substr(2, 5), []);
+  const foreground = contrast(background);
+
+  const padding = (() => {
+    switch (reactive) {
+      case 'point+x':
+      case 'point+y':
+        return 28;
+
+      case 'point+xy':
+        return 44;
+
+      default:
+        return 0;
+    }
+  })();
 
   const { domain, range, points, path } = useMemo(() => {
     const { xs, ys } = data.reduce((set, { x, y }) => ({
@@ -93,16 +111,15 @@ export function Graph({
 
     const points = data
       .sort(({x: ax}, {x: bx}) => ax - bx)
-      .map((point) => {
-        const { dx: x, dy: y } = interpolateXY(point, domain, range, view, delta);
-
-        return { x, y };
-      });
+      .map((point) => ({
+        ...point,
+        ...interpolateXY(point, domain, range, view, padding, delta),
+      }));
 
     const path = bezier < 6 ? linearPath(points) : cubicBezierPath(points, bezier);
 
     return { domain, range, points, path };
-  }, [data, view, delta, bezier]);
+  }, [data, view, delta, padding, bezier]);
 
   useEffect(() => {
     const updateGraphPosition = ({ clientX, clientY }) => {
@@ -118,10 +135,10 @@ export function Graph({
       }
 
       for (let i = 0; i < points.length - 1; i++) {
-        if (x >= points[i].x && x <= points[i + 1].x) {
-          const midX = (points[i].x + points[i + 1].x) / 2;
+        if (x >= points[i].dx && x <= points[i + 1].dx) {
+          const mid = (points[i].dx + points[i + 1].dx) / 2;
 
-          return setPosition({ ...points[x < midX ? i : i + 1] });
+          return setPosition({ ...points[x < mid ? i : i + 1] });
         }
       }
 
@@ -139,29 +156,26 @@ export function Graph({
     }
   }, [reactive, view, points]);
 
-  const foreground = contrast(background);
-
   const gridFactory = ({ label, value }) => {
-    const { dy } = interpolateXY({ x: 0, y: value }, domain, range, view, delta);
+    const { dy } = interpolateXY({ x: 0, y: value }, domain, range, view, padding, delta);
     const text = label ?? labelY?.(value) ?? `${value}`
 
     const textStyle = {
       fontSize: '12px',
-      opacity: '0.4',
       userSelect: 'none',
     };
 
     return (
       <g key={value}>
-        <text x={view.x - 8} y={dy - 8} fill={foreground} textAnchor="end" style={textStyle}>{text}</text>
+        <text x={view.x - 8} y={dy - 8} fill={foreground} opacity="0.4" textAnchor="end" style={textStyle}>{text}</text>
         <line x1="0" x2={view.x} y1={dy} y2={dy} stroke={`url(#gl-grid-${id})`} strokeWidth="0.25" strokeDasharray="2.5" />
       </g>
     );
   };
 
-  const buildPosition = ({ x, y }) => {
+  const buildPointAxis = ({ x, y, dx }) => {
     const textStyle = {
-      fontSize: '12px',
+      fontSize: '12.5px',
       fontWeight: '500',
       userSelect: 'none',
     };
@@ -176,25 +190,25 @@ export function Graph({
       case 'point+x':
         return (
           <>
-            <text x={x} y="17" fill={foreground} textAnchor="middle" style={textStyle}>{labelX?.(x) ?? `${x}`}</text>
-            <line x1={position.x} x2={position.x} y1="26" y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
+            <text x={dx} y="16" fill={foreground} textAnchor="middle" style={textStyle}>{labelX?.(x) ?? `${x}`}</text>
+            <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
           </>
         );
 
       case 'point+y':
         return (
           <>
-            <text x={x} y="16" fill={foreground} textAnchor="middle" style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
-            <line x1={position.x} x2={position.x} y1="26" y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
+            <text x={dx} y="16" fill={foreground} textAnchor="middle" style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
+            <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
           </>
         );
 
       case 'point+xy':
         return (
           <>
-            <text x={x} y="16" fill={foreground} textAnchor="middle" style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
-            <text x={x} y="32" fill={foreground} opacity="1" textAnchor="middle" style={subtextStyle}>{labelX?.(x) ?? `${x}`}</text>
-            <line x1={position.x} x2={position.x} y1="42" y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
+            <text x={dx} y="16" fill={foreground} textAnchor="middle" style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
+            <text x={dx} y="32" fill={foreground} textAnchor="middle" style={subtextStyle}>{labelX?.(x) ?? `${x}`}</text>
+            <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
           </>
         );
 
@@ -219,12 +233,12 @@ export function Graph({
       {gradient && <path d={`${path} V${view.y} H0 Z`} strokeWidth="0" fill={`url(#gl-area-${id})`} />}
       <path d={path} stroke={tint} strokeWidth={stroke} fill="transparent" />
       {reactive && position && (
-        <>
-          {buildPosition(position)}
-          <circle cx={position.x} cy={position.y} r={stroke * 3.25} stroke={background} fill={tint}>
+        <g>
+          {buildPointAxis(position)}
+          <circle cx={position.dx} cy={position.dy} r={stroke * 3.25} stroke={background} fill={tint}>
             <animate attributeName="stroke-width" dur="1450ms" values={`${stroke}; ${stroke * 1.75}; ${stroke}`} repeatCount="indefinite" />
           </circle>
-        </>
+        </g>
       )}
     </svg>
   );

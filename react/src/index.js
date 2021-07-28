@@ -100,7 +100,6 @@ const CAD_USD = {
   background: '#262c33',
   gradient: true,
   reactive: 'point+xy',
-  labelY: (y) => `${Math.ceil(y)}`,
 };
 
 const BATTERY = {
