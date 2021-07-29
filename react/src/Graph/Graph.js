@@ -20,6 +20,10 @@ function interpolateXY(point, domain, range, bounds, padding, delta) {
 }
 
 function cubicBezierPath(points, coefficient) {
+  if (!points.length) {
+    return null;
+  }
+
   const bezierPoints = [];
 
   for (let i = 0; i < points.length - 1; i++) {
@@ -54,6 +58,10 @@ function cubicBezierPath(points, coefficient) {
 }
 
 function linearPath([first, ...points]) {
+  if (!first) {
+    return null;
+  }
+
   return [`M${first.dx} ${first.dy}`]
     .concat(points.map((point) => `L${point.dx} ${point.dy}`))
     .join(' ');

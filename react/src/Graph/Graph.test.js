@@ -1,10 +1,12 @@
 import { render, screen } from '@testing-library/react';
-import Graph from './Graph';
+import { Graph } from './Graph';
 
-test('renders svg path', () => {
+test('renders svg path', async () => {
   render(<Graph />);
 
-  const svgElement = screen.getByTitle(/gl-graph/i);
+  const path = await screen.findByText((_, element) => element.tagName === 'path');
 
-  expect(svgElement).toBeInTheDocument();
+  expect(path).toBeInTheDocument();
+  expect(path).toHaveAttribute('stroke', '#000');
+  expect(path).toHaveAttribute('fill', 'transparent');
 });
