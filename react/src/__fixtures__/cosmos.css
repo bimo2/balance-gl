@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Ubuntu', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.cosmos_preview {
+  max-height: 750px;
+  max-width: 750px;
+  margin: auto;
+}
