@@ -1,3 +1,4 @@
+import React from 'react';
 import { Viewport } from 'react-cosmos/fixture';
 import './cosmos.css';
 
