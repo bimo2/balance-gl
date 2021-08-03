@@ -12,7 +12,9 @@
     "directory": "react"
   },
   "scripts": {
-    "cosmos": "cosmos"
+    "build": "tsc -p ./typescript/tsconfig.build.json",
+    "cosmos": "cosmos",
+    "tsc": "tsc"
   },
   "peerDependencies": {
     "react": "^17.0.2",
@@ -22,19 +24,24 @@
     "@babel/core": "^7.14.8",
     "@babel/preset-env": "^7.14.9",
     "@babel/preset-react": "^7.14.5",
+    "@babel/preset-typescript": "^7.14.5",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.0.0",
     "@testing-library/user-event": "^13.2.1",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^16.4.10",
+    "@types/react": "^17.0.15",
+    "@types/react-dom": "^17.0.9",
     "babel-loader": "^8.2.2",
+    "babel-plugin-module-resolver": "^4.1.0",
     "core-js": "^3.16.0",
     "css-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.2",
     "react": "^17.0.2",
     "react-cosmos": "^5.6.3",
     "react-dom": "^17.0.2",
+    "style-loader": "^3.2.1",
+    "typescript": "^4.3.5",
     "webpack": "^5.47.1"
-  },
-  "dependencies": {
-    "style-loader": "^3.2.1"
   }
 }

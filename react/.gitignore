@@ -1,7 +1,5 @@
-.DS_Store
-
 # Node
 node_modules/
 
 # React
-build/
+dist/

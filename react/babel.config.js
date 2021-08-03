@@ -10,6 +10,14 @@ module.exports = {
         corejs: '3.16',
       },
     ],
+    '@babel/preset-typescript',
     '@babel/preset-react',
+  ],
+  plugins: [
+    [
+      'module-resolver', {
+        root: './src',
+      },
+    ],
   ],
 };

@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig",
+  "compilerOptions": {
+    // Build
+    "declaration": true,
+    "declarationDir": "../dist",
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false
+  },
+  "exclude": ["../tests", "../cosmos"]
+}

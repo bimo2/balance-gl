@@ -1,6 +1,6 @@
 import React from 'react';
 import { Fixture } from './cosmos.decorator';
-import { Graph } from '../Graph';
+import { Graph } from '../src/Graph';
 
 function date() {
   const months = [
@@ -65,7 +65,7 @@ const Bitcoin = (
       delta={1}
       bezier={8}
       stroke={2.5}
-      tint="#262C33"
+      tint="#343A40"
       background="#FFF"
       gradient={false}
       reactive="point+xy"
@@ -114,7 +114,7 @@ const AAPL = (
 );
 
 const FBDownloads = (
-  <Fixture height={275} width={450} background="#262C33">
+  <Fixture height={275} width={450} background="#21262B">
     <Graph
       view={{ x: 450, y: 275 }}
       data={[
@@ -134,7 +134,7 @@ const FBDownloads = (
       bezier={6}
       stroke={2.5}
       tint="#07F"
-      background="#262C33"
+      background="#21262B"
       gradient
       reactive="point+x"
       labelX={date()}
