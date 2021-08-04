@@ -1,9 +1,36 @@
 import { useRef, useState, useMemo, useEffect, useLayoutEffect } from 'react';
 import { palette, contrast } from 'colors';
+import type { GLPoint, GLInterpolation, GLAxis } from 'types';
+import type { CSSProperties } from 'react';
 
-const defaultView = { x: 200, y: 100 };
+interface Extrema {
+  min: number;
+  max: number;
+}
 
-function interpolateXY(point, domain, range, bounds, padding, delta) {
+export interface GLGraphProps {
+  view: GLPoint;
+  data: GLPoint[];
+  grid?: GLAxis[];
+  delta?: number;
+  bezier?: number;
+  stroke?: number;
+  tint?: string;
+  background?: string;
+  gradient?: boolean;
+  reactive?: 'point' | 'point+x' | 'point+y' | 'point+xy';
+  labelX?: (x: number) => string;
+  labelY?: (y: number) => string; 
+}
+
+function interpolateXY(
+  point: GLPoint,
+  domain: Extrema,
+  range: Extrema,
+  bounds: GLPoint,
+  padding: number,
+  delta: number
+) {
   const dx = domain.min !== domain.max ? (bounds.x * (point.x - domain.min)) / (domain.max - domain.min) : 0;
   const spread = Math.abs((range.max - range.min) / range.min);
   const deltaCompression = bounds.y * (1 - (spread / delta));
@@ -19,9 +46,9 @@ function interpolateXY(point, domain, range, bounds, padding, delta) {
   return { dx, dy };
 }
 
-function cubicBezierPath(points, coefficient) {
+function cubicBezierPath(points: GLInterpolation[], coefficient: number) {
   if (!points.length) {
-    return null;
+    return;
   }
 
   const bezierPoints = [];
@@ -57,9 +84,9 @@ function cubicBezierPath(points, coefficient) {
     .join(' ');
 }
 
-function linearPath([first, ...points]) {
+function linearPath([first, ...points]: GLInterpolation[]) {
   if (!first) {
-    return null;
+    return;
   }
 
   return [`M${first.dx} ${first.dy}`]
@@ -67,9 +94,9 @@ function linearPath([first, ...points]) {
     .join(' ');
 }
 
-export function Graph({
-  view = defaultView,
-  data = [],
+export function GLGraph({
+  view,
+  data,
   grid = [],
   delta = 0,
   bezier = 0,
@@ -80,11 +107,11 @@ export function Graph({
   reactive,
   labelX,
   labelY,
-}) {
-  const graph = useRef(null);
-  const label = useRef(null);
-  const [position, setPosition] = useState(null);
-  const [alignment, setAlignment] = useState('middle');
+}: GLGraphProps) {
+  const graph = useRef<SVGSVGElement>(null);
+  const label = useRef<SVGGElement>(null);
+  const [position, setPosition] = useState<GLInterpolation | null>(null);
+  const [alignment, setAlignment] = useState<'start' | 'middle' | 'end'>('middle');
   const id = useMemo(() => Math.random().toString(36).substr(2, 5), []);
   const foreground = contrast(background);
 
@@ -103,22 +130,22 @@ export function Graph({
   })();
 
   const { domain, range, points, path } = useMemo(() => {
-    const { xs, ys } = data.reduce((set, { x, y }) => ({
+    const { xs, ys } = data.reduce<{ xs: number[], ys: number[] }>((set, { x, y }) => ({
       xs: [...set.xs, x],
       ys: [...set.ys, y],
     }), { xs: [], ys: [] });
 
-    const domain = {
+    const domain: Extrema = {
       min: Math.min(...xs),
       max: Math.max(...xs),
     };
 
-    const range = {
+    const range: Extrema = {
       min: Math.min(...ys),
       max: Math.max(...ys),
     };
 
-    const points = data
+    const points: GLInterpolation[] = data
       .sort(({x: ax}, {x: bx}) => ax - bx)
       .map((point) => ({
         ...point,
@@ -131,13 +158,17 @@ export function Graph({
   }, [data, view, delta, padding, bezier]);
 
   useEffect(() => {
-    const updateGraphPosition = ({ clientX, clientY }) => {
+    const updateGraphPosition = ({ clientX, clientY }: MouseEvent) => {
+      if (!graph?.current) {
+        return;
+      }
+
       const svgPoint = graph.current.createSVGPoint();
 
       svgPoint.x = clientX;
       svgPoint.y = clientY;
 
-      const { x, y } = svgPoint.matrixTransform(graph.current.getScreenCTM().inverse());
+      const { x, y } = svgPoint.matrixTransform(graph.current.getScreenCTM()?.inverse());
 
       if (x < 0 || x > view.x || y < 0 || y > view.y) {
         return setPosition(null);
@@ -154,15 +185,17 @@ export function Graph({
       setPosition(null);
     }
 
-    if (reactive && graph?.current) {
-      const { current } = graph;
-
-      current.addEventListener("mousemove", updateGraphPosition, false);
-
-      return () => {
-        current.removeEventListener("mousemove", updateGraphPosition, false);
-      };
+    if (!reactive || !graph?.current) {
+      return;
     }
+
+    const { current } = graph;
+
+    current.addEventListener("mousemove", updateGraphPosition, false);
+
+    return () => {
+      current.removeEventListener("mousemove", updateGraphPosition, false);
+    };
   }, [reactive, view, points]);
 
   useLayoutEffect(() => {
@@ -208,10 +241,15 @@ export function Graph({
     }
   }, [position, alignment, view]);
 
-  const gridFactory = ({ label: text, y }) => {
+  const gridFactory = (axis: GLAxis) => {
+    if (!('y' in axis)) {
+      return null;
+    }
+
+    const { label: text, y } = axis;
     const { dy } = interpolateXY({ x: 0, y }, domain, range, view, padding, delta);
 
-    const textStyle = {
+    const textStyle: CSSProperties = {
       fontSize: '12px',
       userSelect: 'none',
     };
@@ -224,16 +262,16 @@ export function Graph({
     );
   };
 
-  const buildPointAxis = ({ x, y, dx }) => {
-    const textStyle = {
+  const buildPointAxis = ({ x, y, dx }: GLInterpolation) => {
+    const textStyle: CSSProperties = {
       fontSize: '12.5px',
-      fontWeight: '500',
+      fontWeight: 500,
       userSelect: 'none',
     };
 
-    const subtextStyle = {
+    const subtextStyle: CSSProperties = {
       fontSize: '10px',
-      fontWeight: '500',
+      fontWeight: 500,
       userSelect: 'none',
     };
 
@@ -254,7 +292,9 @@ export function Graph({
       case 'point+x':
         return (
           <>
-            <text ref={label} x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>{labelX?.(x) ?? `${x}`}</text>
+            <g ref={label}>
+              <text x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>{labelX?.(x) ?? `${x}`}</text>
+            </g>
             <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
           </>
         );
@@ -262,7 +302,9 @@ export function Graph({
       case 'point+y':
         return (
           <>
-            <text ref={label} x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
+            <g ref={label}>
+              <text x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
+            </g>
             <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
           </>
         );

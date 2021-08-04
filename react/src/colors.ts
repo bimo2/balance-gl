@@ -3,7 +3,7 @@ const palette = {
   background: '#fff',
 };
 
-function contrast(hexColor) {
+function contrast(hexColor: string) {
   let code = hexColor.toLowerCase().substr(1);
 
   if (code.length === 3) {

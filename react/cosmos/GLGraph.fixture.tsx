@@ -1,4 +1,4 @@
-import { Graph } from 'Graph/Graph';
+import { GLGraph } from 'GLGraph/GLGraph';
 import { Fixture } from './cosmos.decorator';
 
 function date() {
@@ -8,20 +8,20 @@ function date() {
     'Sep', 'Oct', 'Nov', 'Dec',
   ];
 
-  return (unix) => {
+  return (unix: number) => {
     const date = new Date(unix);
 
     return `${months[date.getMonth()]} ${date.getDate()} ${date.getFullYear()}`;
   };
 }
 
-function money(symbol, currency) {
-  return (string) => `${symbol}${string} ${currency}`;
+function money(symbol: string, currency: string) {
+  return (value: number) => `${symbol}${value} ${currency}`;
 }
 
 const Bitcoin = (
   <Fixture height={275} width={675} background="#FFF">
-    <Graph
+    <GLGraph
       view={{ x: 675, y: 275 }}
       data={[
         { x: 1606712400000, y: 24000 },
@@ -76,7 +76,7 @@ const Bitcoin = (
 
 const AAPL = (
   <Fixture height={250} width={400} background="#000">
-    <Graph
+    <GLGraph
       view={{ x: 400, y: 250 }}
       data={[
         { x: 1612155600000, y: 136.86 },
@@ -106,7 +106,7 @@ const AAPL = (
       background="#000"
       gradient
       reactive="point+y"
-      labelX={null}
+      labelX={undefined}
       labelY={money('$', 'USD')}
     />;
   </Fixture>
@@ -114,7 +114,7 @@ const AAPL = (
 
 const FBDownloads = (
   <Fixture height={275} width={450} background="#21262B">
-    <Graph
+    <GLGraph
       view={{ x: 450, y: 275 }}
       data={[
         { x: 1606798800000, y: 110500 },
@@ -137,14 +137,14 @@ const FBDownloads = (
       gradient
       reactive="point+x"
       labelX={date()}
-      labelY={null}
+      labelY={undefined}
     />
   </Fixture>
 ); 
 
 const LULUSparkline = (
   <Fixture height={50} width={150} background="#FFF">
-    <Graph
+    <GLGraph
       view={{ x: 150, y: 50 }}
       data={[
         { x: 0, y: 248 },
@@ -171,9 +171,9 @@ const LULUSparkline = (
       tint="#F04"
       background="#FFF"
       gradient={false}
-      reactive={null}
-      labelX={null}
-      labelY={null}
+      reactive={undefined}
+      labelX={undefined}
+      labelY={undefined}
     />
   </Fixture>
 );

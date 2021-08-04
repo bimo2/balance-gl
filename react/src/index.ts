@@ -1,1 +1,2 @@
-export { Graph as GLGraph } from 'Graph/Graph';
+export * from 'GLGraph/GLGraph';
+export * from 'types';

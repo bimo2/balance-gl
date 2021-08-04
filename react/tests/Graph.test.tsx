@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
-import { Graph } from 'Graph/Graph';
+import { GLGraph } from 'GLGraph/GLGraph';
 
 test('renders svg path', async () => {
-  render(<Graph />);
+  render(<GLGraph view={{ x: 100, y: 100 }} data={[]} />);
 
-  const path = await screen.findByText((_, element) => element.tagName === 'path');
+  const path = await screen.findByText((_, element) => element?.tagName === 'path');
 
   expect(path).toBeInTheDocument();
   expect(path).toHaveAttribute('stroke', '#000');
