@@ -11,12 +11,22 @@ module.exports = {
       },
     ],
     '@babel/preset-typescript',
-    '@babel/preset-react',
+    [
+      '@babel/preset-react', {
+        runtime: 'automatic',
+      },
+    ],
   ],
   plugins: [
     [
       'module-resolver', {
         root: './src',
+        extensions: [
+          '.js',
+          '.jsx',
+          '.ts',
+          '.tsx',
+        ],
       },
     ],
   ],

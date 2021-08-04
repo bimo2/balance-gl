@@ -1,5 +1,5 @@
-import React, { useRef, useState, useMemo, useEffect, useLayoutEffect } from 'react';
-import { palette, contrast } from '../colors';
+import { useRef, useState, useMemo, useEffect, useLayoutEffect } from 'react';
+import { palette, contrast } from 'colors';
 
 const defaultView = { x: 200, y: 100 };
 

@@ -1,6 +1,5 @@
-import React from 'react';
+import { Graph } from 'Graph/Graph';
 import { Fixture } from './cosmos.decorator';
-import { Graph } from '../src/Graph';
 
 function date() {
   const months = [

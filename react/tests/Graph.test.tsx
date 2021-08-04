@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { Graph } from '../src/Graph/Graph';
+import { Graph } from 'Graph/Graph';
 
 test('renders svg path', async () => {
   render(<Graph />);
