@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { GLGraph } from 'GLGraph/GLGraph';
 
-test('renders svg path', async () => {
+test('renders svg paths', async () => {
   render(<GLGraph view={{ x: 100, y: 100 }} data={[]} />);
 
   const path = await screen.findByText((_, element) => element?.tagName === 'path');
