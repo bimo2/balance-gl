@@ -3,7 +3,8 @@ import { palette, contrast } from 'colors';
 import type { GLPoint, GLInterpolation, GLAxis } from 'types';
 import type { CSSProperties } from 'react';
 
-interface Extrema {
+interface Space {
+  magnitude?: number;
   min: number;
   max: number;
 }
@@ -11,8 +12,9 @@ interface Extrema {
 export interface GLGraphProps {
   view: GLPoint;
   data: GLPoint[];
+  domain?: number;
+  range?: number;
   grid?: GLAxis[];
-  delta?: number;
   bezier?: number;
   stroke?: number;
   tint?: string;
@@ -25,19 +27,23 @@ export interface GLGraphProps {
 
 function interpolateXY(
   point: GLPoint,
-  domain: Extrema,
-  range: Extrema,
+  domain: Space,
+  range: Space,
   bounds: GLPoint,
   padding: number,
-  delta: number
 ) {
-  const dx = domain.min !== domain.max ? (bounds.x * (point.x - domain.min)) / (domain.max - domain.min) : 0;
-  const spread = Math.abs((range.max - range.min) / range.min);
-  const deltaCompression = bounds.y * (1 - (spread / delta));
-  const fitCompression = bounds.y * 0.1;
-  const minCompression = padding * 2;
-  const compression = Math.max(deltaCompression, fitCompression, minCompression);
-  let dy = bounds.y - (compression / 2) - (((bounds.y - compression) * (point.y - range.min)) / (range.max - range.min));
+  const pathX = Math.max(domain.magnitude ?? 0, domain.max - domain.min);
+  let dx = (point.x - domain.min) * (bounds.x / pathX);
+
+  if (!isFinite(dx)) {
+    dx = 0;
+  }
+
+  const pathY = Math.max(range.magnitude ?? 0, range.max - range.min);
+  const offsetY = (bounds.y * 0.05) + padding;
+  const boundsY = (bounds.y * 0.9) - padding;
+  const translateY = ((range.max + range.min) / 2) - (pathY / 2);
+  let dy = boundsY + offsetY - ((point.y - translateY) * (boundsY / pathY));
 
   if (!isFinite(dy)) {
     dy = bounds.y / 2;
@@ -97,8 +103,9 @@ function linearPath([first, ...points]: GLInterpolation[]) {
 export function GLGraph({
   view,
   data,
+  domain: _domain,
+  range: _range,
   grid = [],
-  delta = 0,
   bezier = 0,
   stroke = 2.5,
   tint = palette.tint,
@@ -135,12 +142,14 @@ export function GLGraph({
       ys: [...set.ys, y],
     }), { xs: [], ys: [] });
 
-    const domain: Extrema = {
+    const domain: Space = {
+      magnitude: _domain,
       min: Math.min(...xs),
       max: Math.max(...xs),
     };
 
-    const range: Extrema = {
+    const range: Space = {
+      magnitude: _range, 
       min: Math.min(...ys),
       max: Math.max(...ys),
     };
@@ -149,13 +158,13 @@ export function GLGraph({
       .sort(({x: ax}, {x: bx}) => ax - bx)
       .map((point) => ({
         ...point,
-        ...interpolateXY(point, domain, range, view, padding, delta),
+        ...interpolateXY(point, domain, range, view, padding),
       }));
 
     const path = bezier < 6 ? linearPath(points) : cubicBezierPath(points, bezier);
 
     return { domain, range, points, path };
-  }, [data, view, delta, padding, bezier]);
+  }, [data, _domain, _range, view, padding, bezier]);
 
   useEffect(() => {
     const updateGraphPosition = ({ clientX, clientY }: MouseEvent) => {
@@ -247,7 +256,7 @@ export function GLGraph({
     }
 
     const { label: text, y } = axis;
-    const { dy } = interpolateXY({ x: 0, y }, domain, range, view, padding, delta);
+    const { dy } = interpolateXY({ x: 0, y }, domain, range, view, padding);
 
     const textStyle: CSSProperties = {
       fontSize: '12px',

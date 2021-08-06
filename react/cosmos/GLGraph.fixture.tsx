@@ -15,8 +15,8 @@ function date() {
   };
 }
 
-function money(symbol: string, currency: string) {
-  return (value: number) => `${symbol}${value} ${currency}`;
+function money(symbol: string, currency: string, decimals = 0) {
+  return (value: number) => `${symbol}${value.toFixed(decimals)} ${currency}`;
 }
 
 const Bitcoin = (
@@ -53,15 +53,17 @@ const Bitcoin = (
         { x: 1629172800000, y: 48000 },
         { x: 1630036800000, y: 69000 },
         { x: 1630900800000, y: 60000 },
-        { x: 1631764800000, y: 100000 },
+        { x: 1631764800000, y: 101000 },
       ]}
+      domain={undefined}
+      range={25000}
       grid={[
         { label: '$25K', y: 25000 },
         { label: '$45K', y: 45000 },
         { label: '$65K', y: 65000 },
         { label: '$85K', y: 85000 },
+        { label: '$105K', y: 105000 },
       ]}
-      delta={1}
       bezier={8}
       stroke={2.5}
       tint="#343A40"
@@ -79,27 +81,36 @@ const AAPL = (
     <GLGraph
       view={{ x: 400, y: 250 }}
       data={[
-        { x: 1612155600000, y: 136.86 },
-        { x: 1613278800000, y: 126.00 },
-        { x: 1614574800000, y: 116.43 },
-        { x: 1615780800000, y: 123.29 },
-        { x: 1617249600000, y: 124.60 },
-        { x: 1618459200000, y: 132.04 },
-        { x: 1619841600000, y: 122.77 },
-        { x: 1621051200000, y: 126.96 },
-        { x: 1622520000000, y: 127.18 },
-        { x: 1623729600000, y: 132.70 },
-        { x: 1625112000000, y: 149.16 },
-        { x: 1626321600000, y: 145.80 },
+        { x: 1650375045000, y: 196.02 },
+        { x: 1650375945000, y: 196.87 },
+        { x: 1650376845000, y: 194.70 },
+        { x: 1650377745000, y: 195.21 },
+        { x: 1650378645000, y: 197.04 },
+        { x: 1650379545000, y: 198.49 },
+        { x: 1650380445000, y: 199.00 },
+        { x: 1650381345000, y: 202.46 },
+        { x: 1650382245000, y: 201.98 },
+        { x: 1650383145000, y: 203.66 },
+        { x: 1650384045000, y: 199.84 },
+        { x: 1650384945000, y: 199.69 },
+        { x: 1650385845000, y: 199.17 },
+        { x: 1650386745000, y: 200.14 },
+        { x: 1650387645000, y: 200.04 },
+        { x: 1650388545000, y: 201.70 },
+        { x: 1650389445000, y: 199.96 },
+        { x: 1650390345000, y: 196.60 },
+        { x: 1650391245000, y: 200.16 },
+        { x: 1650392145000, y: 200.70 },
       ]}
+      domain={23400000}
+      range={16}
       grid={[
-        { label: '112', y: 112 },
-        { label: '122', y: 122 },
-        { label: '132', y: 132 },
-        { label: '142', y: 142 },
-        { label: '152', y: 152 },
+        { label: '194', y: 194 },
+        { label: '197', y: 197 },
+        { label: '200', y: 200 },
+        { label: '203', y: 203 },
+        { label: '206', y: 206 },
       ]}
-      delta={0.5}
       bezier={0}
       stroke={2}
       tint="#FFF"
@@ -107,7 +118,7 @@ const AAPL = (
       gradient
       reactive="point+y"
       labelX={undefined}
-      labelY={money('$', 'USD')}
+      labelY={money('$', 'USD', 2)}
     />;
   </Fixture>
 );
@@ -124,12 +135,13 @@ const FBDownloads = (
         { x: 1617249600000, y: 407750 },
         { x: 1619841600000, y: 196000 },
       ]}
+      domain={undefined}
+      range={undefined}
       grid={[
         { label: '100K', y: 100000 },
         { label: '250K', y: 250000 },
         { label: '400K', y: 400000 },
       ]}
-      delta={6}
       bezier={6}
       stroke={2.5}
       tint="#07F"
@@ -142,32 +154,34 @@ const FBDownloads = (
   </Fixture>
 ); 
 
-const LULUSparkline = (
+const ALOSparkline = (
   <Fixture height={50} width={150} background="#FFF">
     <GLGraph
       view={{ x: 150, y: 50 }}
       data={[
-        { x: 0, y: 248 },
-        { x: 1, y: 220 },
-        { x: 2, y: 204 },
-        { x: 3, y: 140 },
-        { x: 4, y: 196 },
-        { x: 5, y: 200 },
-        { x: 6, y: 248 },
-        { x: 7, y: 323 },
-        { x: 8, y: 289 },
-        { x: 9, y: 399 },
-        { x: 10, y: 294 },
-        { x: 11, y: 349 },
-        { x: 12, y: 326 },
-        { x: 13, y: 378 },
+        { x: 0, y: 260 },
+        { x: 1, y: 232 },
+        { x: 2, y: 226 },
+        { x: 3, y: 218 },
+        { x: 4, y: 244 },
+        { x: 5, y: 247 },
+        { x: 6, y: 274 },
+        { x: 7, y: 250 },
+        { x: 8, y: 269 },
+        { x: 9, y: 263 },
+        { x: 10, y: 287 },
+        { x: 11, y: 280 },
+        { x: 12, y: 277 },
+        { x: 13, y: 260 },
         { x: 14, y: 286 },
-        { x: 15, y: 401 },
+        { x: 15, y: 289 },
+        { x: 16, y: 296 },
       ]}
+      domain={20}
+      range={undefined}
       grid={[]}
-      delta={2.5}
-      bezier={10}
-      stroke={3.5}
+      bezier={8}
+      stroke={2.75}
       tint="#F04"
       background="#FFF"
       gradient={false}
@@ -182,5 +196,5 @@ export default {
   'Bitcoin': Bitcoin,
   'AAPL': AAPL,
   'FB Downloads': FBDownloads,
-  'LULU Sparkline': LULUSparkline,
+  'ALO Sparkline': ALOSparkline,
 };
