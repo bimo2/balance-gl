@@ -1,3 +1,5 @@
+// eslint-env node
+
 module.exports = {
   globals: {
     'ts-jest': {

@@ -1,7 +1,7 @@
+import type { ReactElement, CSSProperties } from 'react';
+import type { GLPoint, GLInterpolation, GLAxis } from 'types';
 import { useRef, useState, useMemo, useEffect, useLayoutEffect } from 'react';
 import { palette, contrast } from 'colors';
-import type { GLPoint, GLInterpolation, GLAxis } from 'types';
-import type { CSSProperties } from 'react';
 
 interface Space {
   magnitude?: number;
@@ -9,7 +9,7 @@ interface Space {
   max: number;
 }
 
-export interface GLGraphProps {
+interface GLGraphProps {
   view: GLPoint;
   data: GLPoint[];
   domain?: number;
@@ -22,7 +22,7 @@ export interface GLGraphProps {
   gradient?: boolean;
   reactive?: 'point' | 'point+x' | 'point+y' | 'point+xy';
   labelX?: (x: number) => string;
-  labelY?: (y: number) => string; 
+  labelY?: (y: number) => string;
 }
 
 function interpolateXY(
@@ -35,17 +35,17 @@ function interpolateXY(
   const pathX = Math.max(domain.magnitude ?? 0, domain.max - domain.min);
   let dx = (point.x - domain.min) * (bounds.x / pathX);
 
-  if (!isFinite(dx)) {
+  if (!Number.isFinite(dx)) {
     dx = 0;
   }
 
   const pathY = Math.max(range.magnitude ?? 0, range.max - range.min);
-  const offsetY = (bounds.y * 0.05) + padding;
-  const boundsY = (bounds.y * 0.9) - padding;
-  const translateY = ((range.max + range.min) / 2) - (pathY / 2);
-  let dy = boundsY + offsetY - ((point.y - translateY) * (boundsY / pathY));
+  const offsetY = bounds.y * 0.05 + padding;
+  const boundsY = bounds.y * 0.9 - padding;
+  const translateY = (range.max + range.min) / 2 - pathY / 2;
+  let dy = boundsY + offsetY - (point.y - translateY) * (boundsY / pathY);
 
-  if (!isFinite(dy)) {
+  if (!Number.isFinite(dy)) {
     dy = bounds.y / 2;
   }
 
@@ -69,12 +69,12 @@ function cubicBezierPath(points: GLInterpolation[], coefficient: number) {
 
     const bezier = [
       {
-        x: (-set[0].dx + (coefficient * set[1].dx) + set[2].dx) / coefficient,
-        y: (-set[0].dy + (coefficient * set[1].dy) + set[2].dy) / coefficient,
+        x: (-set[0].dx + coefficient * set[1].dx + set[2].dx) / coefficient,
+        y: (-set[0].dy + coefficient * set[1].dy + set[2].dy) / coefficient,
       },
       {
-        x: (set[1].dx + (coefficient * set[2].dx) - set[3].dx) / coefficient,
-        y: (set[1].dy + (coefficient * set[2].dy) - set[3].dy) / coefficient,
+        x: (set[1].dx + coefficient * set[2].dx - set[3].dx) / coefficient,
+        y: (set[1].dy + coefficient * set[2].dy - set[3].dy) / coefficient,
       },
       {
         x: set[2].dx,
@@ -114,7 +114,7 @@ export function GLGraph({
   reactive,
   labelX,
   labelY,
-}: GLGraphProps) {
+}: GLGraphProps): ReactElement {
   const graph = useRef<SVGSVGElement>(null);
   const label = useRef<SVGGElement>(null);
   const [position, setPosition] = useState<GLInterpolation | null>(null);
@@ -137,30 +137,37 @@ export function GLGraph({
   })();
 
   const { domain, range, points, path } = useMemo(() => {
-    const { xs, ys } = data.reduce<{ xs: number[], ys: number[] }>((set, { x, y }) => ({
-      xs: [...set.xs, x],
-      ys: [...set.ys, y],
-    }), { xs: [], ys: [] });
+    const { xs, ys } = data.reduce<{ xs: number[]; ys: number[] }>(
+      (set, { x, y }) => ({
+        xs: [...set.xs, x],
+        ys: [...set.ys, y],
+      }),
+      { xs: [], ys: [] },
+    );
 
+    // eslint-disable-next-line no-shadow
     const domain: Space = {
       magnitude: _domain,
       min: Math.min(...xs),
       max: Math.max(...xs),
     };
 
+    // eslint-disable-next-line no-shadow
     const range: Space = {
-      magnitude: _range, 
+      magnitude: _range,
       min: Math.min(...ys),
       max: Math.max(...ys),
     };
 
+    // eslint-disable-next-line no-shadow
     const points: GLInterpolation[] = data
-      .sort(({x: ax}, {x: bx}) => ax - bx)
+      .sort(({ x: ax }, { x: bx }) => ax - bx)
       .map((point) => ({
         ...point,
         ...interpolateXY(point, domain, range, view, padding),
       }));
 
+    // eslint-disable-next-line no-shadow
     const path = bezier < 6 ? linearPath(points) : cubicBezierPath(points, bezier);
 
     return { domain, range, points, path };
@@ -183,7 +190,7 @@ export function GLGraph({
         return setPosition(null);
       }
 
-      for (let i = 0; i < points.length - 1; i++) {
+      for (let i = 0; i < points.length - 1; i += 1) {
         if (x >= points[i].dx && x <= points[i + 1].dx) {
           const mid = (points[i].dx + points[i + 1].dx) / 2;
 
@@ -192,7 +199,7 @@ export function GLGraph({
       }
 
       setPosition(null);
-    }
+    };
 
     if (!reactive || !graph?.current) {
       return;
@@ -200,10 +207,10 @@ export function GLGraph({
 
     const { current } = graph;
 
-    current.addEventListener("mousemove", updateGraphPosition, false);
+    current.addEventListener('mousemove', updateGraphPosition, false);
 
     return () => {
-      current.removeEventListener("mousemove", updateGraphPosition, false);
+      current.removeEventListener('mousemove', updateGraphPosition, false);
     };
   }, [reactive, view, points]);
 
@@ -232,14 +239,14 @@ export function GLGraph({
         break;
 
       case 'start':
-        if (position.dx >= (width / 2)) {
+        if (position.dx >= width / 2) {
           return setAlignment('middle');
         }
 
         break;
 
       case 'end':
-        if ((view.x - position.dx) >= (width / 2)) {
+        if (view.x - position.dx >= width / 2) {
           return setAlignment('middle');
         }
 
@@ -256,7 +263,7 @@ export function GLGraph({
     }
 
     const { label: text, y } = axis;
-    const { dy } = interpolateXY({ x: 0, y }, domain, range, view, padding);
+    const { dy } = interpolateXY({ x: 0, y: y }, domain, range, view, padding);
 
     const textStyle: CSSProperties = {
       fontSize: '12px',
@@ -265,8 +272,25 @@ export function GLGraph({
 
     return (
       <g key={y}>
-        <text x={view.x - 8} y={dy - 8} fill={foreground} opacity="0.4" textAnchor="end" style={textStyle}>{text ?? labelY?.(y) ?? `${y}`}</text>
-        <line x1="0" x2={view.x} y1={dy} y2={dy} stroke={`url(#gl-grid-${id})`} strokeWidth="0.25" strokeDasharray="2.5" />
+        <text
+          x={view.x - 8}
+          y={dy - 8}
+          fill={foreground}
+          opacity="0.4"
+          textAnchor="end"
+          style={textStyle}
+        >
+          {text ?? labelY?.(y) ?? `${y}`}
+        </text>
+        <line
+          x1="0"
+          x2={view.x}
+          y1={dy}
+          y2={dy}
+          stroke={`url(#gl-grid-${id})`}
+          strokeWidth="0.25"
+          strokeDasharray="2.5"
+        />
       </g>
     );
   };
@@ -302,9 +326,19 @@ export function GLGraph({
         return (
           <>
             <g ref={label}>
-              <text x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>{labelX?.(x) ?? `${x}`}</text>
+              <text x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>
+                {labelX?.(x) ?? `${x}`}
+              </text>
             </g>
-            <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
+            <line
+              x1={dx}
+              x2={dx}
+              y1={padding}
+              y2={view.y}
+              stroke={foreground}
+              strokeWidth="0.5"
+              strokeDasharray="2.5"
+            />
           </>
         );
 
@@ -312,9 +346,19 @@ export function GLGraph({
         return (
           <>
             <g ref={label}>
-              <text x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
+              <text x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>
+                {labelY?.(y) ?? `${y}`}
+              </text>
             </g>
-            <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
+            <line
+              x1={dx}
+              x2={dx}
+              y1={padding}
+              y2={view.y}
+              stroke={foreground}
+              strokeWidth="0.5"
+              strokeDasharray="2.5"
+            />
           </>
         );
 
@@ -322,38 +366,86 @@ export function GLGraph({
         return (
           <>
             <g ref={label}>
-              <text x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>{labelY?.(y) ?? `${y}`}</text>
-              <text x={anchor} y="32" fill={foreground} textAnchor={alignment} style={subtextStyle}>{labelX?.(x) ?? `${x}`}</text>
+              <text x={anchor} y="16" fill={foreground} textAnchor={alignment} style={textStyle}>
+                {labelY?.(y) ?? `${y}`}
+              </text>
+              <text x={anchor} y="32" fill={foreground} textAnchor={alignment} style={subtextStyle}>
+                {labelX?.(x) ?? `${x}`}
+              </text>
             </g>
-            <line x1={dx} x2={dx} y1={padding} y2={view.y} stroke={foreground} strokeWidth="0.5" strokeDasharray="2.5" />
+            <line
+              x1={dx}
+              x2={dx}
+              y1={padding}
+              y2={view.y}
+              stroke={foreground}
+              strokeWidth="0.5"
+              strokeDasharray="2.5"
+            />
           </>
         );
 
       default:
         return null;
-    };
+    }
   };
 
   return (
-    <svg ref={graph} className="gl-graph" viewBox={`0 0 ${view.x} ${view.y}`} xmlns="http://www.w3.org/2000/svg" version="1.1" onMouseLeave={() => setPosition(null)} height="100%" width="100%">
+    <svg
+      ref={graph}
+      className="gl-graph"
+      viewBox={`0 0 ${view.x} ${view.y}`}
+      xmlns="http://www.w3.org/2000/svg"
+      version="1.1"
+      onMouseLeave={() => setPosition(null)}
+      height="100%"
+      width="100%"
+    >
       <defs>
-        <linearGradient id={`gl-grid-${id}`} x1="0" x2="100%" y1="0" y2="0" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id={`gl-grid-${id}`}
+          x1="0"
+          x2="100%"
+          y1="0"
+          y2="0"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0%" stopColor={background} stopOpacity="0" />
           <stop offset="75%" stopColor={foreground} stopOpacity="1" />
         </linearGradient>
-        <linearGradient id={`gl-area-${id}`} x1="0" x2="0" y1="0" y2="100%" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id={`gl-area-${id}`}
+          x1="0"
+          x2="0"
+          y1="0"
+          y2="100%"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="40%" stopColor={tint} stopOpacity="0.1" />
           <stop offset="80%" stopColor={tint} stopOpacity="0" />
         </linearGradient>
       </defs>
       {grid.map(gridFactory)}
-      {gradient && <path d={`${path} V${view.y} H0 Z`} strokeWidth="0" fill={`url(#gl-area-${id})`} />}
+      {gradient && (
+        <path d={`${path} V${view.y} H0 Z`} strokeWidth="0" fill={`url(#gl-area-${id})`} />
+      )}
       <path d={path} stroke={tint} strokeWidth={stroke} fill="transparent" />
       {reactive && position && (
         <g>
           {buildPointAxis(position)}
-          <circle cx={position.dx} cy={position.dy} r={stroke * 3.25} stroke={background} fill={tint}>
-            <animate attributeName="stroke-width" dur="1450ms" values={`${stroke}; ${stroke * 1.75}; ${stroke}`} repeatCount="indefinite" />
+          <circle
+            cx={position.dx}
+            cy={position.dy}
+            r={stroke * 3.25}
+            stroke={background}
+            fill={tint}
+          >
+            <animate
+              attributeName="stroke-width"
+              dur="1450ms"
+              values={`${stroke}; ${stroke * 1.75}; ${stroke}`}
+              repeatCount="indefinite"
+            />
           </circle>
         </g>
       )}

@@ -1,11 +1,20 @@
 import { GLGraph } from 'GLGraph/GLGraph';
 import { Fixture } from './cosmos.decorator';
 
-function date() {
+function calendar() {
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr',
-    'May', 'Jun', 'Jul', 'Aug',
-    'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   return (unix: number) => {
@@ -70,7 +79,7 @@ const Bitcoin = (
       background="#FFF"
       gradient={false}
       reactive="point+xy"
-      labelX={date()}
+      labelX={calendar()}
       labelY={money('$', 'CAD')}
     />
   </Fixture>
@@ -83,11 +92,11 @@ const AAPL = (
       data={[
         { x: 1650375045000, y: 196.02 },
         { x: 1650375945000, y: 196.87 },
-        { x: 1650376845000, y: 194.70 },
+        { x: 1650376845000, y: 194.7 },
         { x: 1650377745000, y: 195.21 },
         { x: 1650378645000, y: 197.04 },
         { x: 1650379545000, y: 198.49 },
-        { x: 1650380445000, y: 199.00 },
+        { x: 1650380445000, y: 199.0 },
         { x: 1650381345000, y: 202.46 },
         { x: 1650382245000, y: 201.98 },
         { x: 1650383145000, y: 203.66 },
@@ -96,11 +105,11 @@ const AAPL = (
         { x: 1650385845000, y: 199.17 },
         { x: 1650386745000, y: 200.14 },
         { x: 1650387645000, y: 200.04 },
-        { x: 1650388545000, y: 201.70 },
+        { x: 1650388545000, y: 201.7 },
         { x: 1650389445000, y: 199.96 },
-        { x: 1650390345000, y: 196.60 },
+        { x: 1650390345000, y: 196.6 },
         { x: 1650391245000, y: 200.16 },
-        { x: 1650392145000, y: 200.70 },
+        { x: 1650392145000, y: 200.7 },
       ]}
       domain={23400000}
       range={16}
@@ -119,7 +128,7 @@ const AAPL = (
       reactive="point+y"
       labelX={undefined}
       labelY={money('$', 'USD', 2)}
-    />;
+    />
   </Fixture>
 );
 
@@ -148,11 +157,11 @@ const FBDownloads = (
       background="#21262B"
       gradient
       reactive="point+x"
-      labelX={date()}
+      labelX={calendar()}
       labelY={undefined}
     />
   </Fixture>
-); 
+);
 
 const ALOSparkline = (
   <Fixture height={50} width={150} background="#FFF">

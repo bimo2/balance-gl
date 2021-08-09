@@ -1,3 +1,2 @@
 # TypeScript
-tsconfig.build.json    linguist-language=jsonc
-tsconfig.test.json     linguist-language=jsonc
+tsconfig.*.json    linguist-language=jsonc

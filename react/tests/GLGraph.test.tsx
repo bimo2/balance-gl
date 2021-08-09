@@ -12,7 +12,7 @@ it('renders svg graph', () => {
         { x: 3, y: 8 },
         { x: 4, y: 16 },
       ]}
-    />
+    />,
   );
 
   const [path] = container.querySelectorAll('path');
