@@ -1,0 +1,42 @@
+{
+  "_version": 0,
+  "_system": {
+    "Node.js": "node",
+    "Yarn": "yarn"
+  },
+  "scripts": {
+    "build": {
+      "info": "Build production library and TS declarations",
+      "commands": [
+        "rm -rf ./dist",
+        "NODE_ENV=[target=production] yarn build",
+        "yarn tsc"
+      ]
+    },
+    "dev": {
+      "info": "Start React component preview",
+      "commands": [
+        "yarn cosmos"
+      ]
+    },
+    "test": {
+      "info": "Run DOM/UI and unit tests",
+      "commands": [
+        "yarn test [regex]"
+      ]
+    },
+    "lint": {
+      "info": "Find and fix static errors",
+      "commands": [
+        "yarn tsc:type-check",
+        "yarn lint"
+      ]
+    },
+    "clean": {
+      "info": "Delete cache and build resources",
+      "commands": [
+        "rm -rf ./dist"
+      ]
+    }
+  }
+}

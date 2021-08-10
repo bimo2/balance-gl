@@ -67,11 +67,12 @@ module.exports = {
       {
         devDependencies: [
           './tests/**/*',
-          '**/.*rc.js',
-          '**/*.config.*',
-          '**/*.test.*',
-          '**/*.decorator.*',
-          '**/*.fixture.*',
+          './cosmos/**/*',
+          '**/.eslintrc.js',
+          '**/.prettier.js',
+          '**/babel.config.js',
+          '**/jest.config.js',
+          '**/webpack.config.js',
         ],
       },
     ],
@@ -114,7 +115,7 @@ module.exports = {
     },
     'import/extensions': ['.js', '.jsx', '.ts', '.tsx'],
   },
-  ignorePatterns: ['./node_modules/**/*', './dist/**/*'],
+  ignorePatterns: ['node_modules/**/*', 'dist/**/*'],
   overrides: [
     {
       files: ['./tests/**/*'],

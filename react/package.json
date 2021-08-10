@@ -11,11 +11,14 @@
     "url": "https://github.com/bimo2/balance-gl.git",
     "directory": "react"
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p ./typescript/tsconfig.build.json",
+    "build": "babel src -d dist --extensions .js,.jsx,.ts,.tsx",
     "test": "jest",
-    "lint": "eslint . --fix --ext js,jsx,ts,tsx",
-    "tsc": "tsc",
+    "lint": "eslint . --fix --ext .js,.jsx,.ts,.tsx",
+    "tsc": "tsc -p ./typescript/tsconfig.build.json",
+    "tsc:type-check": "tsc",
     "cosmos": "cosmos"
   },
   "peerDependencies": {
@@ -23,6 +26,7 @@
     "react-dom": "^17.0.2"
   },
   "devDependencies": {
+    "@babel/cli": "^7.14.8",
     "@babel/core": "^7.14.8",
     "@babel/preset-env": "^7.14.9",
     "@babel/preset-react": "^7.14.5",
