@@ -1,7 +1,4 @@
 {
-  "editor.codeActionsOnSave": {
-    "source.fixAll": true
-  },
   "editor.formatOnSave": true,
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
@@ -9,6 +6,5 @@
     "*.svg": "html"
   },
   "files.insertFinalNewline": true,
-  "files.trimFinalNewlines": true,
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "files.trimFinalNewlines": true
 }

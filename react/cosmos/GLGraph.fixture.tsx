@@ -163,33 +163,34 @@ const FBDownloads = (
   </Fixture>
 );
 
-const ALOSparkline = (
+const LULUSparkline = (
   <Fixture height={50} width={150} background="#FFF">
     <GLGraph
       view={{ x: 150, y: 50 }}
       data={[
-        { x: 0, y: 260 },
+        { x: 0, y: 162 },
         { x: 1, y: 232 },
-        { x: 2, y: 226 },
-        { x: 3, y: 218 },
-        { x: 4, y: 244 },
-        { x: 5, y: 247 },
-        { x: 6, y: 274 },
-        { x: 7, y: 250 },
-        { x: 8, y: 269 },
-        { x: 9, y: 263 },
-        { x: 10, y: 287 },
-        { x: 11, y: 280 },
-        { x: 12, y: 277 },
-        { x: 13, y: 260 },
-        { x: 14, y: 286 },
-        { x: 15, y: 289 },
-        { x: 16, y: 296 },
+        { x: 2, y: 228 },
+        { x: 3, y: 202 },
+        { x: 4, y: 286 },
+        { x: 5, y: 249 },
+        { x: 6, y: 154 },
+        { x: 7, y: 284 },
+        { x: 8, y: 296 },
+        { x: 9, y: 390 },
+        { x: 10, y: 316 },
+        { x: 11, y: 371 },
+        { x: 12, y: 299 },
+        { x: 13, y: 296 },
+        { x: 14, y: 340 },
+        { x: 15, y: 318 },
+        { x: 16, y: 428 },
+        { x: 17, y: 406 },
       ]}
       domain={20}
       range={undefined}
       grid={[]}
-      bezier={8}
+      bezier={6}
       stroke={2.75}
       tint="#F04"
       background="#FFF"
@@ -205,5 +206,5 @@ export default {
   'Bitcoin': Bitcoin,
   'AAPL': AAPL,
   'FB Downloads': FBDownloads,
-  'ALO Sparkline': ALOSparkline,
+  'LULU Sparkline': LULUSparkline,
 };

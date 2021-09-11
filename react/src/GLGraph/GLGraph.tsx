@@ -421,7 +421,7 @@ export function GLGraph({
           y2="100%"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="40%" stopColor={tint} stopOpacity="0.1" />
+          <stop offset="40%" stopColor={tint} stopOpacity="0.15" />
           <stop offset="80%" stopColor={tint} stopOpacity="0" />
         </linearGradient>
       </defs>

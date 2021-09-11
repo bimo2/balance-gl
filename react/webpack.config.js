@@ -1,6 +1,6 @@
 // eslint-env node
 
-/* eslint-disable no-var, @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-var-requires */
 
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
